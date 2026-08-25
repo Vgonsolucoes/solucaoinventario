@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Package2, Save } from "lucide-react";
+import { ArrowLeft, Loader2, Package2, QrCode, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,7 @@ import {
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { PatrimonioEstado } from "@prisma/client";
+import { QrScannerModal } from "@/components/QrScannerModal";
 
 const schema = z.object({
   tombamento: z.string().min(1, "Tombamento obrigatório"),
@@ -45,6 +46,7 @@ export default function NovoPatrimonioPage() {
   const [setores, setSetores] = useState<Opt[]>([]);
   const [categorias, setCategorias] = useState<Opt[]>([]);
   const [colaboradores, setColaboradores] = useState<Opt[]>([]);
+  const [qrOpen, setQrOpen] = useState(false);
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<Form>({
     resolver: zodResolver(schema),
@@ -88,6 +90,12 @@ export default function NovoPatrimonioPage() {
     } finally { setSubmitting(false); }
   }
 
+  function onQrResult(codigo: string) {
+    setValue("tombamento", codigo, { shouldValidate: true, shouldDirty: true });
+    setQrOpen(false);
+    toast.success(`Tombamento lido: ${codigo}`);
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
@@ -106,7 +114,18 @@ export default function NovoPatrimonioPage() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Tombamento *" error={errors.tombamento?.message}>
-              <Input placeholder="Ex: PAT-000123" {...register("tombamento")} />
+              <div className="flex gap-2">
+                <Input placeholder="Ex: PAT-000123" {...register("tombamento")} className="flex-1" />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setQrOpen(true)}
+                  className="shrink-0 border-solucao-brand text-solucao-brand hover:bg-solucao-brand/10 hover:text-solucao-brand"
+                >
+                  <QrCode className="w-4 h-4 mr-2" />
+                  Ler QR Code
+                </Button>
+              </div>
             </Field>
             <Field label="Estado de Conservação" error={errors.estado?.message as string}>
               <Select value={estadoVal} onValueChange={(v) => setValue("estado", v as PatrimonioEstado, { shouldValidate: true })}>
@@ -188,6 +207,12 @@ export default function NovoPatrimonioPage() {
           </CardFooter>
         </form>
       </Card>
+
+      <QrScannerModal
+        open={qrOpen}
+        onOpenChange={setQrOpen}
+        onResult={onQrResult}
+      />
     </div>
   );
 }

@@ -20,6 +20,7 @@ import { PatrimonioEstado } from "@prisma/client";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose,
 } from "@/components/ui/dialog";
+import { QrScannerModal } from "@/components/QrScannerModal";
 
 const schema = z.object({
   tombamento: z.string().min(1, "Tombamento obrigatório"),
@@ -54,6 +55,7 @@ export default function EditarPatrimonioPage({ params }: { params: { id: string 
   const [categorias, setCategorias] = useState<Opt[]>([]);
   const [colaboradores, setColaboradores] = useState<Opt[]>([]);
   const [qrOpen, setQrOpen] = useState(false);
+  const [qrScanOpen, setQrScanOpen] = useState(false);
   const [qrPng, setQrPng] = useState("");
   const [qrLoading, setQrLoading] = useState(false);
   const [pat, setPat] = useState<Patrimonio | null>(null);
@@ -144,6 +146,12 @@ export default function EditarPatrimonioPage({ params }: { params: { id: string 
     w.document.close();
   }
 
+  function onQrScanResult(codigo: string) {
+    setValue("tombamento", codigo, { shouldValidate: true, shouldDirty: true });
+    setQrScanOpen(false);
+    toast.success(`Tombamento lido: ${codigo}`);
+  }
+
   if (loading) return (
     <div className="flex items-center justify-center py-20 text-muted-foreground">
       <Loader2 className="w-6 h-6 animate-spin mr-2" /> Carregando patrimônio...
@@ -180,7 +188,18 @@ export default function EditarPatrimonioPage({ params }: { params: { id: string 
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Tombamento *" error={errors.tombamento?.message}>
-              <Input {...register("tombamento")} />
+              <div className="flex gap-2">
+                <Input {...register("tombamento")} className="flex-1" />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setQrScanOpen(true)}
+                  className="shrink-0 border-solucao-brand text-solucao-brand hover:bg-solucao-brand/10 hover:text-solucao-brand"
+                >
+                  <QrCode className="w-4 h-4 mr-2" />
+                  Ler QR Code
+                </Button>
+              </div>
             </Field>
             <Field label="Estado de Conservação" error={errors.estado?.message as string}>
               <Select value={estadoVal} onValueChange={(v) => setValue("estado", v as PatrimonioEstado, { shouldValidate: true })}>
@@ -267,6 +286,12 @@ export default function EditarPatrimonioPage({ params }: { params: { id: string 
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <QrScannerModal
+        open={qrScanOpen}
+        onOpenChange={setQrScanOpen}
+        onResult={onQrScanResult}
+      />
     </div>
   );
 }
