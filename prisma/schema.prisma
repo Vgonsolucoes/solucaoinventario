@@ -44,6 +44,8 @@ model Colaborador {
   setorId       String
   setor         Setor        @relation(fields: [setorId], references: [id])
   ativo         Boolean      @default(true)
+  passwordHash  String?
+  setoresPermitidos Setor[] @relation("ColaboradorSetoresPermitidos")
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
@@ -60,6 +62,7 @@ model Setor {
   updatedAt     DateTime      @updatedAt
 
   colaboradores Colaborador[]
+  colaboradoresPermitidos Colaborador[] @relation("ColaboradorSetoresPermitidos")
   patrimonios   Patrimonio[]
   inventarios   Inventario[]
 }

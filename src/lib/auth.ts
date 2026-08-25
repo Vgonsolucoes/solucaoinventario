@@ -6,11 +6,15 @@ import { UserRole } from "@prisma/client";
 const AUTH_COOKIE = "auth_session";
 const JWT_ALG = "HS256";
 
+export type SubjectKind = "USER" | "COLABORADOR";
+
 export interface SessionPayload {
   sub: string;
+  kind: SubjectKind;
   email: string;
   name: string;
   role: UserRole;
+  setoresPermitidosIds?: string[];
   iat?: number;
   exp?: number;
 }
@@ -25,18 +29,22 @@ function getSecret() {
 
 export async function createSession(user: {
   id: string;
+  kind: SubjectKind;
   email: string;
   name: string;
   role: UserRole;
+  setoresPermitidosIds?: string[];
 }) {
   const expiresInSec = 60 * 60 * 24 * 7; // 7 dias
   const now = Math.floor(Date.now() / 1000);
 
   const token = await new SignJWT({
     sub: user.id,
+    kind: user.kind,
     email: user.email,
     name: user.name,
     role: user.role,
+    setoresPermitidosIds: user.setoresPermitidosIds || [],
   })
     .setProtectedHeader({ alg: JWT_ALG })
     .setIssuedAt(now)
@@ -53,10 +61,12 @@ export async function createSession(user: {
   });
 
   try {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() },
-    });
+    if (user.kind === "USER") {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { lastLoginAt: new Date() },
+      });
+    }
   } catch {
     // ignora erro de atualização de ultimo login
   }
@@ -71,7 +81,10 @@ export async function verifySession(): Promise<SessionPayload | null> {
     if (!token) return null;
 
     const { payload } = await jwtVerify(token, getSecret());
-    return payload as unknown as SessionPayload;
+    const p = payload as unknown as SessionPayload;
+    if (!p.kind) p.kind = "USER";
+    if (!p.setoresPermitidosIds) p.setoresPermitidosIds = [];
+    return p;
   } catch {
     return null;
   }

@@ -16,9 +16,11 @@ export async function GET() {
       ok: true,
       user: {
         id: session.sub,
+        kind: session.kind || "USER",
         email: session.email,
         name: session.name,
         role: session.role,
+        setoresPermitidosIds: session.setoresPermitidosIds || [],
       },
     });
   } catch {

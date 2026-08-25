@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/auth";
 
@@ -11,9 +12,16 @@ const _base = z.object({
   telefone: z.string().trim().nullable().optional().or(z.literal("")),
   setorId: z.string().uuid(),
   ativo: z.boolean().optional(),
+  password: z.string().trim().optional().or(z.literal("")),
+  setoresPermitidosIds: z.array(z.string().uuid()).optional(),
 });
-const schema = _base.transform((d) => ({ ...d, email: d.email || null, telefone: d.telefone || null }));
-const schemaPatch = _base.partial().transform((d: any) => ({ ...d, email: (d.email === undefined || d.email === null) ? d.email : (d.email || null), telefone: (d.telefone === undefined || d.telefone === null) ? d.telefone : (d.telefone || null) }));
+const schema = _base.transform((d) => ({ ...d, email: d.email || null, telefone: d.telefone || null, password: d.password || undefined }));
+const schemaPatch = _base.partial().transform((d: any) => ({
+  ...d,
+  email: (d.email === undefined || d.email === null) ? d.email : (d.email || null),
+  telefone: (d.telefone === undefined || d.telefone === null) ? d.telefone : (d.telefone || null),
+  password: d.password || undefined,
+}));
 
 export async function PATCH(
   req: Request,
@@ -23,12 +31,35 @@ export async function PATCH(
   if (!s) return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
   try {
     const data = schemaPatch.parse(await req.json());
-    const updated = await prisma.colaborador.update({ where: { id: params.id }, data });
-    await prisma.auditLog.create({
-      data: { userId: s.sub, action: "UPDATE", entity: "Colaborador", entityId: updated.id },
+
+    const updateData: any = {};
+    if (data.matricula !== undefined) updateData.matricula = data.matricula;
+    if (data.nome !== undefined) updateData.nome = data.nome;
+    if (data.cargo !== undefined) updateData.cargo = data.cargo;
+    if (data.email !== undefined) updateData.email = data.email;
+    if (data.telefone !== undefined) updateData.telefone = data.telefone;
+    if (data.setorId !== undefined) updateData.setorId = data.setorId;
+    if (data.ativo !== undefined) updateData.ativo = data.ativo;
+    if (data.password) updateData.passwordHash = await bcrypt.hash(data.password, 12);
+
+    if (data.setoresPermitidosIds) {
+      const ids = Array.from(new Set(data.setoresPermitidosIds)) as string[];
+      updateData.setoresPermitidos = {
+        set: ids.map((id) => ({ id })),
+      };
+    }
+
+    const updated = await prisma.colaborador.update({
+      where: { id: params.id },
+      data: updateData,
+      include: { setoresPermitidos: { select: { id: true, nome: true } } },
     });
-    return NextResponse.json(updated);
-  } catch {
+    await prisma.auditLog.create({
+      data: { userId: s.sub, action: "UPDATE", entity: "Colaborador", entityId: updated.id, details: { setoresPermitidosIds: data.setoresPermitidosIds || null, senhaAlterada: !!data.password } },
+    });
+    return NextResponse.json({ ...updated, passwordHash: undefined });
+  } catch (e) {
+    console.error("[COLAB_PATCH]", e);
     return NextResponse.json({ error: "Erro ao atualizar colaborador." }, { status: 500 });
   }
 }
