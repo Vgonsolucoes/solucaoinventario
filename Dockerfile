@@ -7,6 +7,12 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
+# Alpine: instala OpenSSL (libssl) exigido pelo Prisma Engine
+RUN apk add --no-cache openssl
+
+# Copia o schema do Prisma (necessário antes do postinstall / prisma generate)
+COPY prisma/schema.prisma prisma/
+
 # Copia manifestos e instala dependências (cache layer)
 COPY package.json package-lock.json* ./
 RUN \
@@ -20,11 +26,14 @@ RUN \
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Alpine: instala OpenSSL (libssl) exigido pelo Prisma Engine
+RUN apk add --no-cache openssl
+
 # Copia dependências do stage anterior
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Gera o Prisma Client antes do build (postinstall já roda mas garantimos)
+# Garante Prisma Client (re-gerado com os bins de Alpine, evita incompatibilidade)
 RUN npx prisma generate
 
 # Build Next.js (output: standalone configurado em next.config.mjs)
@@ -41,6 +50,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Alpine: OpenSSL (Prisma runtime) + wget/curl para health check
+RUN apk add --no-cache openssl wget curl
+
 # Usuário não-root para segurança
 RUN addgroup --system --gid 1001 nodejs && \
     adduser  --system --uid 1001 nextjs
@@ -50,10 +62,10 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copia schema e migrations (para rodar `prisma migrate deploy` no entrypoint se quiser)
+# Copia schema e migrations (exigido por `prisma migrate deploy` no entrypoint)
 COPY --chown=nextjs:nodejs prisma ./prisma
 
-# Script de entrypoint (opcional: rodar migrations antes de subir a app)
+# Script de entrypoint (roda migrations antes de subir a app)
 COPY --chown=nextjs:nodejs docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
