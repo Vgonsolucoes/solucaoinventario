@@ -2,18 +2,35 @@ import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { authCookieName } from "@/lib/auth";
 
-const PUBLIC_ROUTES = ["/login", "/api/login", "/api/health", "/_next", "/favicon.ico", "/logo"];
+const PUBLIC_ROUTES = ["/login", "/api/login", "/api/health", "/api/session", "/_next", "/favicon.ico", "/logo"];
 const PUBLIC_ROOT = "/";
+
+const LOGIN_PAGES = ["/", "/login"];
 
 function getSecret() {
   const secret = process.env.AUTH_SECRET ?? "fallback-secret-nao-producao";
   return new TextEncoder().encode(secret);
 }
 
+async function getValidSession(request: NextRequest) {
+  const token = request.cookies.get(authCookieName)?.value;
+  if (!token) return null;
+  try {
+    const verified = await jwtVerify(token, getSecret());
+    return verified.payload;
+  } catch {
+    return null;
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname === PUBLIC_ROOT) {
+  if (LOGIN_PAGES.includes(pathname)) {
+    const session = await getValidSession(request);
+    if (session) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
     return NextResponse.next();
   }
 
