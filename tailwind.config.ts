@@ -54,6 +54,7 @@ const config: Config = {
           blue: "#003366",
           orange: "#F37021",
           light: "#F5F5F5",
+          brand: "#2eafa4",
         },
       },
       borderRadius: {

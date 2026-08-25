@@ -20,6 +20,9 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
+const POWER_TOWER_IMAGE =
+  "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=industrial%20high%20voltage%20electricity%20transmission%20towers%20landscape%20monochrome%20gray%20tones%20moody%20sky%20realistic%20photography%20horizontal%20banner&image_size=landscape_16_9";
+
 function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
@@ -59,8 +62,8 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-solucao-blue/5 via-white to-solucao-orange/5">
-      <header className="bg-white/60 backdrop-blur border-b border-solucao-blue/10">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      <header className="bg-white/70 backdrop-blur border-b border-slate-200/80">
         <div className="container mx-auto py-3 px-4 flex items-center justify-between">
           <Image
             src="https://sesolucao.com.br/wp-content/themes/solucao/img/logo__solucao.png"
@@ -69,118 +72,140 @@ function LoginForm() {
             height={54}
             priority
           />
-          <span className="text-xs sm:text-sm font-medium text-solucao-blue">
+          <span className="text-xs sm:text-sm font-semibold text-solucao-brand">
             Sistema de Inventário
           </span>
         </div>
       </header>
 
       <main className="flex-1 flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-xl grid grid-cols-1 md:grid-cols-5 gap-6 items-center">
-          <div className="md:col-span-3 hidden md:block space-y-6">
-            <div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-solucao-blue mb-3">
-                Gestão de Patrimônio
-              </h1>
-              <p className="text-base text-muted-foreground leading-relaxed">
-                Controle completo de ativos, inventários e colaboradores com
-                leitura de QR Code via câmera.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white rounded-xl shadow-sm border p-4">
-                <p className="font-semibold text-solucao-blue text-sm">Patrimônios</p>
-                <p className="text-xs text-muted-foreground">
-                  Cadastre e gerencie todos os ativos
+        <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+          <div className="relative hidden lg:block min-h-[520px]">
+            <Image
+              src={POWER_TOWER_IMAGE}
+              alt="Postes de alta tensão"
+              fill
+              className="object-cover grayscale brightness-105 contrast-105"
+              priority
+              sizes="(max-width: 1024px) 0, 50vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-solucao-blue/70 via-slate-900/55 to-solucao-brand/55" />
+            <div className="absolute inset-0 p-10 flex flex-col justify-end gap-6 text-white">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] font-semibold text-white/80 mb-2">
+                  Solução Equipamentos
+                </p>
+                <h1 className="text-4xl xl:text-5xl font-bold leading-tight">
+                  Gestão de Patrimônio
+                </h1>
+                <p className="mt-4 text-lg text-white/90 max-w-md leading-relaxed">
+                  Controle completo de ativos, inventários e colaboradores com
+                  leitura de QR Code via câmera.
                 </p>
               </div>
-              <div className="bg-white rounded-xl shadow-sm border p-4">
-                <p className="font-semibold text-solucao-orange text-sm">Inventários</p>
-                <p className="text-xs text-muted-foreground">
-                  Realize inventários periódicos
-                </p>
-              </div>
-              <div className="bg-white rounded-xl shadow-sm border p-4">
-                <p className="font-semibold text-solucao-blue text-sm">Colaboradores</p>
-                <p className="text-xs text-muted-foreground">
-                  Responsáveis e usuários
-                </p>
-              </div>
-              <div className="bg-white rounded-xl shadow-sm border p-4">
-                <p className="font-semibold text-solucao-orange text-sm">QR Code</p>
-                <p className="text-xs text-muted-foreground">
-                  Etiquetas e leitura via câmera
-                </p>
+              <div className="grid grid-cols-2 gap-3 max-w-md">
+                <div className="bg-white/10 backdrop-blur rounded-xl px-4 py-3 border border-white/20">
+                  <p className="text-sm font-semibold">Patrimônios</p>
+                  <p className="text-xs text-white/80">
+                    Cadastre e gerencie todos os ativos
+                  </p>
+                </div>
+                <div className="bg-white/10 backdrop-blur rounded-xl px-4 py-3 border border-white/20">
+                  <p className="text-sm font-semibold">Inventários</p>
+                  <p className="text-xs text-white/80">
+                    Realize inventários periódicos
+                  </p>
+                </div>
+                <div className="bg-white/10 backdrop-blur rounded-xl px-4 py-3 border border-white/20">
+                  <p className="text-sm font-semibold">Colaboradores</p>
+                  <p className="text-xs text-white/80">
+                    Responsáveis e usuários
+                  </p>
+                </div>
+                <div className="bg-white/10 backdrop-blur rounded-xl px-4 py-3 border border-white/20">
+                  <p className="text-sm font-semibold">QR Code</p>
+                  <p className="text-xs text-white/80">
+                    Etiquetas e leitura via câmera
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          <Card className="md:col-span-2 w-full shadow-xl border-0">
-            <CardHeader className="text-center space-y-3 md:hidden">
-              <CardTitle className="text-solucao-blue text-2xl">
-                Gestão de Patrimônio
-              </CardTitle>
-              <CardDescription>
-                Solução Equipamentos - Inventário
-              </CardDescription>
-            </CardHeader>
-            <CardHeader className="text-center space-y-2 hidden md:block">
-              <CardTitle className="text-solucao-blue text-xl">
-                Acesso ao Sistema
-              </CardTitle>
-              <CardDescription>
-                Entre com suas credenciais
-              </CardDescription>
-            </CardHeader>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <CardContent className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="home-email">E-mail</Label>
-                  <Input
-                    id="home-email"
-                    type="email"
-                    placeholder="voce@sesolucao.com.br"
-                    autoComplete="email"
-                    {...register("email")}
-                  />
-                  {errors.email && (
-                    <p className="text-xs text-destructive">{errors.email.message}</p>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="home-password">Senha</Label>
-                  <Input
-                    id="home-password"
-                    type="password"
-                    placeholder="Sua senha"
-                    autoComplete="current-password"
-                    {...register("password")}
-                  />
-                  {errors.password && (
-                    <p className="text-xs text-destructive">{errors.password.message}</p>
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  type="submit"
-                  className="w-full bg-solucao-blue hover:bg-solucao-blue/90"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <LogIn className="w-4 h-4 mr-2" />
-                  )}
-                  {loading ? "Entrando..." : "Entrar"}
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
+          <div className="flex items-center justify-center px-4 sm:px-8 py-10 lg:py-12">
+            <div className="w-full max-w-md">
+              <Card className="shadow-none border-0 bg-transparent">
+                <CardHeader className="text-center space-y-3 lg:hidden">
+                  <CardTitle className="text-solucao-blue text-2xl">
+                    Gestão de Patrimônio
+                  </CardTitle>
+                  <CardDescription>
+                    Solução Equipamentos - Inventário
+                  </CardDescription>
+                </CardHeader>
+                <CardHeader className="text-center space-y-2 hidden lg:block">
+                  <CardTitle className="text-solucao-blue text-2xl">
+                    Acesso ao Sistema
+                  </CardTitle>
+                  <CardDescription>
+                    Entre com suas credenciais
+                  </CardDescription>
+                </CardHeader>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="home-email">E-mail</Label>
+                      <Input
+                        id="home-email"
+                        type="email"
+                        placeholder="voce@sesolucao.com.br"
+                        autoComplete="email"
+                        {...register("email")}
+                      />
+                      {errors.email && (
+                        <p className="text-xs text-destructive">
+                          {errors.email.message}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="home-password">Senha</Label>
+                      <Input
+                        id="home-password"
+                        type="password"
+                        placeholder="Sua senha"
+                        autoComplete="current-password"
+                        {...register("password")}
+                      />
+                      {errors.password && (
+                        <p className="text-xs text-destructive">
+                          {errors.password.message}
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button
+                      type="submit"
+                      className="w-full bg-solucao-brand hover:bg-solucao-brand/90 text-white shadow-lg shadow-solucao-brand/20"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <LogIn className="w-4 h-4 mr-2" />
+                      )}
+                      {loading ? "Entrando..." : "Entrar"}
+                    </Button>
+                  </CardFooter>
+                </form>
+              </Card>
+            </div>
+          </div>
         </div>
       </main>
 
-      <footer className="border-t bg-white/60 backdrop-blur py-4">
+      <footer className="border-t bg-white/70 backdrop-blur py-4">
         <div className="container mx-auto text-center text-xs sm:text-sm text-muted-foreground px-4">
           © {new Date().getFullYear()} Solução Equipamentos. Todos os direitos
           reservados.
@@ -196,11 +221,15 @@ export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-slate-50 to-slate-100">
-        <div className="animate-pulse text-muted-foreground">Carregando...</div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100">
+          <div className="animate-pulse text-muted-foreground">
+            Carregando...
+          </div>
+        </div>
+      }
+    >
       <HomeAuthGate />
     </Suspense>
   );
@@ -236,12 +265,14 @@ function HomeAuthGate() {
         if (active) setChecking(false);
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [router]);
 
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-solucao-blue/5 via-white to-solucao-orange/5">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100">
         <div className="animate-pulse text-muted-foreground">Carregando...</div>
       </div>
     );
