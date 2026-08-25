@@ -33,6 +33,9 @@ RUN apk add --no-cache openssl
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Garante pastas que o Next precisa (e que COPY não falha se estiverem vazias/ausentes)
+RUN mkdir -p /app/public /app/.next
+
 # Garante Prisma Client (re-gerado com os bins de Alpine, evita incompatibilidade)
 RUN npx prisma generate
 
@@ -56,6 +59,9 @@ RUN apk add --no-cache openssl wget curl
 # Usuário não-root para segurança
 RUN addgroup --system --gid 1001 nodejs && \
     adduser  --system --uid 1001 nextjs
+
+# Garante pastas existam (evita "not found" no COPY mesmo que fontes estejam vazias)
+RUN mkdir -p /app/public /app/.next/standalone /app/.next/static
 
 # Copia arquivos públicos e gerados pelo Next standalone
 COPY --from=builder /app/public ./public
