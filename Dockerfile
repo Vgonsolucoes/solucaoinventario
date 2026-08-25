@@ -68,6 +68,10 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Garante que node_modules de PRODUCAO exista no runner (contem @prisma/client + engine binaries,
+# necessario para `prisma migrate deploy` e para o Prisma Client em runtime)
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+
 # Copia schema e migrations (exigido por `prisma migrate deploy` no entrypoint)
 COPY --chown=nextjs:nodejs prisma ./prisma
 
