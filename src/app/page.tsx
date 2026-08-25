@@ -20,8 +20,7 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
-const POWER_TOWER_IMAGE =
-  "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=industrial%20high%20voltage%20electricity%20transmission%20towers%20landscape%20monochrome%20gray%20tones%20moody%20sky%20realistic%20photography%20horizontal%20banner&image_size=landscape_16_9";
+const POWER_TOWER_IMAGE = "/images/postes-alta-tensao-cinza.jpg";
 
 function LoginForm() {
   const router = useRouter();
