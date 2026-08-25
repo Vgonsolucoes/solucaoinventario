@@ -75,6 +75,11 @@ COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 # Copia schema e migrations (exigido por `prisma migrate deploy` no entrypoint)
 COPY --chown=nextjs:nodejs prisma ./prisma
 
+# Copia src + tsconfig (exigidos pelo seed prisma/seed.ts que usa alias @/lib/prisma via tsx)
+COPY --chown=nextjs:nodejs src ./src
+COPY --chown=nextjs:nodejs tsconfig.json ./tsconfig.json
+COPY --chown=nextjs:nodejs package.json ./package.json
+
 # Script de entrypoint (roda migrations antes de subir a app)
 COPY --chown=nextjs:nodejs docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh

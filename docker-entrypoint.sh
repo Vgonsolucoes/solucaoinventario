@@ -19,10 +19,24 @@ if [ -n "$DATABASE_URL" ]; then
   else
     echo "⚠️  prisma cli nao encontrado em node_modules - pulando migrate deploy."
   fi
+
+  # 2) Seed inicial (idempotente) - cria admin + setores + categorias
+  TSX_BIN="./node_modules/.bin/tsx"
+  if [ -x "$TSX_BIN" ] && [ -f prisma/seed.ts ]; then
+    echo "🌱 Executando prisma seed (idempotente)..."
+    SEED_ADMIN_EMAIL="${SEED_ADMIN_EMAIL:-admin@sesolucao.com.br}" \
+    SEED_ADMIN_PASSWORD="${SEED_ADMIN_PASSWORD:-Solucao@123}" \
+    node -r "$TSX_BIN/cli.mjs" prisma/seed.ts || {
+      echo "⚠️  Seed falhou - tentando via prisma db seed..."
+      node "$PRISMA_BIN" db seed || true
+    }
+  else
+    echo "⚠️  tsx ou prisma/seed.ts nao encontrados - pulando seed."
+  fi
 else
-  echo "⚠️  DATABASE_URL não definida - pulando migrations."
+  echo "⚠️  DATABASE_URL não definida - pulando migrations e seed."
 fi
 
-# 2) Sobe o servidor Next.js
+# 3) Sobe o servidor Next.js
 echo "🚀 Iniciando servidor Next.js na porta ${PORT:-3000}..."
 exec node server.js
