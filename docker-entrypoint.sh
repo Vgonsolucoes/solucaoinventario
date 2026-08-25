@@ -22,16 +22,20 @@ if [ -n "$DATABASE_URL" ]; then
 
   # 2) Seed inicial (idempotente) - cria admin + setores + categorias
   TSX_BIN="./node_modules/.bin/tsx"
-  if [ -x "$TSX_BIN" ] && [ -f prisma/seed.ts ]; then
+  if [ -f prisma/seed.ts ]; then
     echo "🌱 Executando prisma seed (idempotente)..."
-    SEED_ADMIN_EMAIL="${SEED_ADMIN_EMAIL:-admin@sesolucao.com.br}" \
-    SEED_ADMIN_PASSWORD="${SEED_ADMIN_PASSWORD:-Solucao@123}" \
-    node -r "$TSX_BIN/cli.mjs" prisma/seed.ts || {
-      echo "⚠️  Seed falhou - tentando via prisma db seed..."
-      node "$PRISMA_BIN" db seed || true
-    }
+    if [ -f "$TSX_BIN" ]; then
+      SEED_ADMIN_EMAIL="${SEED_ADMIN_EMAIL:-admin@sesolucao.com.br}" \
+      SEED_ADMIN_PASSWORD="${SEED_ADMIN_PASSWORD:-Solucao@123}" \
+      node "$TSX_BIN" prisma/seed.ts || {
+        echo "⚠️  Seed falhou (tsx direto) - tentando via prisma db seed com PATH ajustado..."
+        PATH="/app/node_modules/.bin:$PATH" node "$PRISMA_BIN" db seed || true
+      }
+    else
+      echo "⚠️  tsx nao encontrado em node_modules - pulando seed."
+    fi
   else
-    echo "⚠️  tsx ou prisma/seed.ts nao encontrados - pulando seed."
+    echo "⚠️  prisma/seed.ts nao encontrado - pulando seed."
   fi
 else
   echo "⚠️  DATABASE_URL não definida - pulando migrations e seed."
