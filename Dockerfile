@@ -85,11 +85,13 @@ ENV UPLOAD_DIR=/app/uploads
 
 USER nextjs
 
+# Aviso: PORT e HOSTNAME sao frequentemente sobrescritos pelo runtime (EasyPanel: PORT=80).
+# Entao nao dependa de EXPOSE/HARDCODE 3000 fora do healthcheck com variable.
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=5 \
-  CMD wget -qO- http://127.0.0.1:3000/api/health || exit 1
+  CMD wget -qO- "http://127.0.0.1:${PORT:-3000}/api/health" || exit 1
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
